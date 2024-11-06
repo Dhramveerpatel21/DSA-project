@@ -1,0 +1,108 @@
+#include <iostream>
+#include <vector>
+#include <climits>
+#include <string>
+
+using namespace std;
+
+const int NUM_CITIES = 5;
+const int INF = INT_MAX;
+
+// Graph representing cities and distances (could represent cost as well)
+string cities[NUM_CITIES] = {"Delhi", "Mumbai", "Kolkata", "Chennai", "Bangalore"};
+int graph[NUM_CITIES][NUM_CITIES] = {
+    {0, 1400, 1500, 2200, 2100},   // Delhi
+    {1400, 0, 2050, 1330, 980},    // Mumbai
+    {1500, 2050, 0, 1650, 1450},   // Kolkata
+    {2200, 1330, 1650, 0, 330},    // Chennai
+    {2100, 980, 1450, 330, 0}      // Bangalore
+};
+
+// Interesting places for each city
+vector<vector<string>> interestingPlaces = {
+    {"Red Fort", "Qutub Minar", "India Gate", "Lotus Temple", "Akshardham Temple"},   // Delhi
+    {"Gateway of India", "Marine Drive", "Elephanta Caves", "Siddhivinayak Temple", "Chhatrapati Shivaji Maharaj Terminus"},  // Mumbai
+    {"Victoria Memorial", "Howrah Bridge", "Dakshineswar Kali Temple", "Eden Gardens", "Indian Museum"},  // Kolkata
+    {"Marina Beach", "Fort St. George", "Kapaleeshwarar Temple", "Valluvar Kottam", "Guindy National Park"},  // Chennai
+    {"Lalbagh Botanical Garden", "Bangalore Palace", "Cubbon Park", "Bannerghatta National Park", "Vidhana Soudha"}  // Bangalore
+};
+
+// Function to find the minimum distance using Dijkstra's algorithm
+int findMinDistance(int dist[], bool visited[]) {
+    int minDist = INF, minIndex;
+    for (int i = 0; i < NUM_CITIES; i++) {
+        if (!visited[i] && dist[i] <= minDist) {
+            minDist = dist[i];
+            minIndex = i;
+        }
+    }
+    return minIndex;
+}
+
+void dijkstra(int start, int end) {
+    int dist[NUM_CITIES];
+    bool visited[NUM_CITIES] = {false};
+    
+    // Initialize distances
+    for (int i = 0; i < NUM_CITIES; i++)
+        dist[i] = INF;
+    dist[start] = 0;
+
+    // Find shortest path
+    for (int i = 0; i < NUM_CITIES - 1; i++) {
+        int u = findMinDistance(dist, visited);
+        visited[u] = true;
+
+        for (int v = 0; v < NUM_CITIES; v++) {
+            if (!visited[v] && graph[u][v] && dist[u] != INF && dist[u] + graph[u][v] < dist[v])
+                dist[v] = dist[u] + graph[u][v];
+        }
+    }
+
+    // Print shortest path distance
+    cout << "Shortest path from " << cities[start] << " to " << cities[end] << " is " << dist[end] << " km.\n";
+
+    // Estimate revenue (example formula based on distance)
+    double revenue = dist[end] * 0.5;  // Hypothetical revenue based on distance
+    cout << "Estimated revenue for travel: Rs. " << revenue << endl;
+}
+
+void showInterestingPlaces(int cityIndex) {
+    cout << "Interesting places to visit in " << cities[cityIndex] << ":\n";
+    for (const auto& place : interestingPlaces[cityIndex]) {
+        cout << "- " << place << endl;
+    }
+}
+
+int main() {
+    int startCity, endCity;
+    char showPlaces;
+
+    cout << "Available Cities:\n";
+    for (int i = 0; i < NUM_CITIES; i++) {
+        cout << i << ": " << cities[i] << endl;
+    }
+
+    cout << "Enter the start city (0 to 4): ";
+    cin >> startCity;
+    cout << "Enter the destination city (0 to 4): ";
+    cin >> endCity;
+
+    if (startCity < 0 || startCity >= NUM_CITIES || endCity < 0 || endCity >= NUM_CITIES) {
+        cout << "Invalid city selection!" << endl;
+        return 0;
+    }
+
+    dijkstra(startCity, endCity);
+
+    // Display interesting places option
+    cout << "\nWould you like to see interesting places to visit in " << cities[startCity] << " and " << cities[endCity] << "? (y/n): ";
+    cin >> showPlaces;
+    if (showPlaces == 'y' || showPlaces == 'Y') {
+        showInterestingPlaces(startCity);
+        cout << endl;
+        showInterestingPlaces(endCity);
+    }
+
+    return 0;
+}
